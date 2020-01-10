@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+from data.settings import INDICATORS_LIST
 
 
 class Country(models.Model):
@@ -6,7 +8,6 @@ class Country(models.Model):
     name = models.CharField(max_length=200, unique=True)
     income = models.CharField(max_length=100)
     region = models.CharField(max_length=200)
-    icon = models.CharField(max_length=200)
 
 
 class Indicator(models.Model):
@@ -18,6 +19,9 @@ class Indicator(models.Model):
 
 class Stat(models.Model):
     country = models.ForeignKey(Country, verbose_name="stat_country", on_delete=models.CASCADE)
-    indicator = models.ForeignKey(Indicator, verbose_name="stat_indicator", on_delete=models.CASCADE)
-    for i in range(1960, 2020):
-        vars()[f"year_{i}"] = models.CharField(max_length=500)
+    for i in INDICATORS_LIST:
+        vars()[i.replace('.', '_')] = models.FloatField()
+    year = models.IntegerField(validators=[
+        MaxValueValidator(2020),
+        MinValueValidator(1960)
+        ])

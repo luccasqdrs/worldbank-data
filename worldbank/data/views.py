@@ -1,13 +1,16 @@
 from data.models import Country, Indicator, Stat
 from data.serializers import CountrySerializer, IndicatorSerializer, StatSerializer
-from rest_framework import generics, status, mixins
+from rest_framework import generics, status, mixins, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from data.settings import INDICATORS_LIST
 
 
 class CountryList(generics.ListAPIView):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = '__all__'
 
 
 class IndicatorList(generics.ListAPIView):
@@ -15,12 +18,23 @@ class IndicatorList(generics.ListAPIView):
     serializer_class = IndicatorSerializer
 
 
-class StatView(mixins.ListModelMixin, generics.GenericAPIView):
+class StatView(generics.ListAPIView):
     queryset = Stat.objects.all()
     serializer_class = StatSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = '__all__'
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+    def get_queryset(self):
+        queryset = Stat.objects.all()
+        query_params = self.request.query_params
+        if countrys := query_params.get('countrys', None):
+            countrys = countrys.split(',')
+            queryset = queryset.filter(country__in=countrys)
+        if years := query_params.get('years', None):
+            years = years.split(',')
+            queryset = queryset.filter(year__in=years)
+        return queryset
+
 
     def get_object(self, pk):
         return Stat.objects.get(pk=pk)
@@ -33,12 +47,3 @@ class StatView(mixins.ListModelMixin, generics.GenericAPIView):
             serializer.save()
             return Response(serializer.data)
         return Response(code=400, data="wrong parameters")
-
-
-class StatFilterView(APIView):
-    def get(self, request):
-        country_list = request.data['countrys']
-        stats = Stat.objects.filter(country__in=country_list)
-        serializer = StatSerializer(stats, many=True)
-
-        return Response(serializer.data)

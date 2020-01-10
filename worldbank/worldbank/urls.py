@@ -22,5 +22,4 @@ urlpatterns = [
     path('countrys/', views.CountryList.as_view()),
     path('indicators/', views.IndicatorList.as_view()),
     path('display_data/', views.StatView.as_view()),
-    path('display_data/filtered/', views.StatFilterView.as_view())
 ]

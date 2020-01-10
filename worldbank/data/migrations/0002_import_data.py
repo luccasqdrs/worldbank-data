@@ -7,15 +7,7 @@ from django.db import migrations
 import zipfile
 import io
 
-INDICATORS_LIST = [
-    "SP.POP.TOTL",
-    "NY.GDP.MKTP.CD",
-    "EN.ATM.CO2E.PC",
-    "SP.DYN.LE00.IN",
-    "TX.VAL.TECH.MF.ZS",
-    "IP.PAT.NRES",
-    "IP.PAT.RESD"
-]
+from data.settings import INDICATORS_LIST
 
 
 def extract_zip(file_obj):
@@ -56,6 +48,14 @@ def import_data(apps, schema_editor):
 
     df_s = df_s.loc[df_s['Country Code'].isin(df_c['Country Code'].to_list())]
 
+    ids = ['Country Code', 'Indicator Code']
+    values = list(map(str, range(1960, 2020)))
+
+    df_s = df_s.drop(['Country Name', 'Indicator Name'], axis=1)
+    df_s = pd.melt(df_s, id_vars=ids, value_vars=values, var_name='Year', value_name='Value')
+    df_s = df_s.pivot_table('Value', ['Year', 'Country Code'], 'Indicator Code').reset_index()
+    df_s = df_s.fillna(0)
+
     records = df_c.to_dict('records')
     instances = [Country(
         name=record['TableName'],
@@ -78,8 +78,8 @@ def import_data(apps, schema_editor):
     records = df_s.to_dict('records')
     instances = [Stat(
         country=Country.objects.get(code=record['Country Code']),
-        indicator=Indicator.objects.get(code=record['Indicator Code']),
-        **{f'year_{i}': record[str(i)] for i in range(1960, 2020)}
+        year=record['Year'],
+        **{ind.replace('.','_'): record[str(ind)] for ind in INDICATORS_LIST}
     ) for record in records]
 
     Stat.objects.bulk_create(instances)

@@ -15,6 +15,7 @@ class IndicatorSerializer(serializers.ModelSerializer):
 
 
 class StatSerializer(serializers.ModelSerializer):
+    country_name = serializers.CharField(source='country.name')
     class Meta:
         model = Stat
         fields = '__all__'

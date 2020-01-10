@@ -1,0 +1,9 @@
+INDICATORS_LIST = [
+    "SP.POP.TOTL",
+    "NY.GDP.MKTP.CD",
+    "EN.ATM.CO2E.PC",
+    "SP.DYN.LE00.IN",
+    "TX.VAL.TECH.MF.ZS",
+    "IP.PAT.NRES",
+    "IP.PAT.RESD"
+]
