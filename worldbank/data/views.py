@@ -27,9 +27,9 @@ class StatView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Stat.objects.all()
         query_params = self.request.query_params
-        if countrys := query_params.get('countrys', None):
-            countrys = countrys.split(',')
-            queryset = queryset.filter(country__in=countrys)
+        if countries := query_params.get('countries', None):
+            countries = countries.split(',')
+            queryset = queryset.filter(country__in=countries)
         if years := query_params.get('years', None):
             years = years.split(',')
             queryset = queryset.filter(year__in=years)

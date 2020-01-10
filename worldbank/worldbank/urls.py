@@ -19,7 +19,7 @@ from data import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('countrys/', views.CountryList.as_view()),
+    path('countries/', views.CountryList.as_view()),
     path('indicators/', views.IndicatorList.as_view()),
     path('display_data/', views.StatView.as_view()),
 ]
