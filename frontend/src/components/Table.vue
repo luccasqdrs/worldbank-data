@@ -98,12 +98,12 @@ export default class Table extends Vue {
 
   private mounted () {
     this.$http
-      .get('http://127.0.0.1:8000/countries/')
+      .get('/countries/')
       .then((response: AxiosResponse) => {
         this.countries = response.data
       })
     this.$http
-      .get('http://127.0.0.1:8000/indicators/')
+      .get('/indicators/')
       .then((response: AxiosResponse) => {
         let res = response.data.map((indicator: any) => {
           let indCode = indicator.code.split('.').join('_')
@@ -128,7 +128,7 @@ export default class Table extends Vue {
   getData () {
     this.$http
       .get(
-        `http://127.0.0.1:8000/display_data/?countries=${this.selectedCountries.join()}&years=${this.selectedYear}`
+        `/display_data/?countries=${this.selectedCountries.join()}&years=${this.selectedYear}`
       )
       .then((response: AxiosResponse) => {
         let data = response.data
@@ -157,7 +157,7 @@ export default class Table extends Vue {
     payload['id'] = key
     payload[column] = value
     this.$http.patch(
-      'http://127.0.0.1:8000/display_data/', payload
+      '/display_data/', payload
     ).then((response: AxiosResponse) => {
       console.log(response.data)
     })

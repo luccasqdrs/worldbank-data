@@ -10,5 +10,12 @@ module.exports = {
         javascriptEnabled: true
       }
     }
+  },
+  devServer: {
+    proxy: {
+      '/': {
+        target: process.env.VUE_APP_DJANGO_URL
+      }
+    }
   }
 }
