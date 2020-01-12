@@ -12,14 +12,13 @@ services:
             - "8001:8000"
 
     frontend:
-        image: node:13-alpine
+        build: 
+            context: ./frontend
         command: npm run serve
         volumes:
             - ./.env:/app/.env:ro
             - ./frontend:/app
-        working_dir: /app
+        command: npm run serve
         restart: on-failure
-        expose: 
-            - 8080
         ports: 
             - "8002:8080"
