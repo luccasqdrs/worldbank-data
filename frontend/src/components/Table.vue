@@ -2,44 +2,26 @@
   <div>
     <a-row>
       <a-col :span="8">
-        <div>
-          <a-button type="primary" :disabled="!hasSelected" :loading="loading">Compare</a-button>
-          <span style="margin-left: 8px">
-            <template v-if="hasSelected">{{`Selected ${selectedRowKeys.length} items`}}</template>
-          </span>
-        </div>
+        <compare-button
+          :selectedKeys="selectedKeys"
+        >
+        </compare-button>
       </a-col>
       <a-col :offset="4" :span="12">
         <a-row>
           <a-col :span="6">
-            <a-select
-              showSearch
-              placeholder="Select a year"
-              :defaultValue="selectedYear"
-              style="width: 200px"
-              @change="filterYear"
+            <year-filter
+              :defaultYear="selectedYear"
+              :handleChange="filterYear"
             >
-              <a-select-option
-              v-for="i in years"
-              :key="i"
-              >{{i}}</a-select-option>
-            </a-select>
+            </year-filter>
           </a-col>
           <a-col :span="18">
-            <a-select
-              mode="multiple"
-              :defaultValue="selectedCountries"
-              style="width: 100%"
-              @change="filterCountries"
-              placeholder="Please select countries"
-              :maxTagCount="5"
-              :maxTagTextLength="11"
+            <country-filter
+              :defaultCountries="selectedCountries"
+              :handleChange="filterCountries"
             >
-              <a-select-option
-                v-for="country in countries"
-                :key="country.code"
-              >{{country.name}}</a-select-option>
-            </a-select>
+            </country-filter>
           </a-col>
         </a-row>
       </a-col>
@@ -48,7 +30,7 @@
     <a-table
       :columns="columnsData"
       :dataSource="data"
-      :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
+      :rowSelection="{selectedRowKeys: selectedKeys, onChange: onSelectChange}"
       :pagination="true"
     >
      <template  v-for="col in editableColumns" :slot="col" slot-scope="text, record">
@@ -63,11 +45,15 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { AxiosResponse } from 'axios'
-import EditableCell from './EditableCell.vue'
+import TableCountryFilter from './TableCountryFilter.vue'
+import TableYearFilter from './TableYearFilter.vue'
+import TableCompareButton from './TableCompareButton.vue'
 
 @Component
 export default class Table extends Vue {
-  selectedRowKeys: Array<string> = [];
+  selectedKeys: Array<number> = [];
+  selectedYear:number = 2018;
+  selectedCountries:Array<string> = ['CHN', 'IND', 'MEX', 'NGA', 'USA'];
   loading: Boolean = false;
   editableColumns = []
   columnsData = [
@@ -83,25 +69,9 @@ export default class Table extends Vue {
         a.country_name.toUpperCase() < b.country_name.toUpperCase()
     }
   ];
-  selectedYear: Number = 2018;
   data = [];
-  selectedCountries = ['CHN', 'IND', 'MEX', 'NGA', 'USA'];
-  countries: Array<any> = [];
-
-  get years () {
-    let yearsList = []
-    for (let i = 1960; i < 2020; i++) {
-      yearsList.push(i)
-    }
-    return yearsList
-  }
 
   private mounted () {
-    this.$http
-      .get('/countries/')
-      .then((response: AxiosResponse) => {
-        this.countries = response.data
-      })
     this.$http
       .get('/indicators/')
       .then((response: AxiosResponse) => {
@@ -121,11 +91,8 @@ export default class Table extends Vue {
     this.getData()
   }
 
-  get hasSelected () {
-    return this.selectedRowKeys.length > 0
-  }
-
   getData () {
+    this.loading = true
     this.$http
       .get(
         `/display_data/?countries=${this.selectedCountries.join()}&years=${this.selectedYear}`
@@ -136,10 +103,11 @@ export default class Table extends Vue {
           row.key = row.id
         })
         this.data = data
+        this.loading = false
       })
   }
 
-  filterYear (value:Number) {
+  filterYear (value:number) {
     this.selectedYear = value
     this.getData()
   }
@@ -148,8 +116,9 @@ export default class Table extends Vue {
     this.selectedCountries = value
     this.getData()
   }
+
   onSelectChange (selectedRowKeys: any) {
-    this.selectedRowKeys = selectedRowKeys
+    this.selectedKeys = selectedRowKeys
   }
 
   onCellChange (key:number, column:string, value:number) {
@@ -164,48 +133,3 @@ export default class Table extends Vue {
   }
 }
 </script>
-
-<style>
-  .editable-cell {
-    position: relative;
-  }
-
-  .editable-cell-input-wrapper,
-  .editable-cell-text-wrapper {
-    padding-right: 24px;
-  }
-
-  .editable-cell-text-wrapper {
-    padding: 5px 24px 5px 5px;
-  }
-
-  .editable-cell-icon,
-  .editable-cell-icon-check {
-    position: absolute;
-    right: 0;
-    width: 20px;
-    cursor: pointer;
-  }
-
-  .editable-cell-icon {
-    line-height: 18px;
-    display: none;
-  }
-
-  .editable-cell-icon-check {
-    line-height: 28px;
-  }
-
-  .editable-cell:hover .editable-cell-icon {
-    display: inline-block;
-  }
-
-  .editable-cell-icon:hover,
-  .editable-cell-icon-check:hover {
-    color: #108ee9;
-  }
-
-  .editable-add-btn {
-    margin-bottom: 8px;
-  }
-</style>
