@@ -32,6 +32,7 @@
       :dataSource="data"
       :rowSelection="{selectedRowKeys: selectedKeys, onChange: onSelectChange}"
       :pagination="true"
+      :loading="loading"
     >
      <template  v-for="col in editableColumns" :slot="col" slot-scope="text, record">
        <div :key="col">
